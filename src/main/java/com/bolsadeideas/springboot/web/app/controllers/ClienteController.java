@@ -1,13 +1,19 @@
 package com.bolsadeideas.springboot.web.app.controllers;
 
+
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,7 +48,7 @@ public class ClienteController {
 	@GetMapping("/company")
 	public String compania(Model model) {
 		
-		model.addAttribute("titulo","Datos de la compa&iacute;a");
+		model.addAttribute("titulo","Datos de la compañía");
 		model.addAttribute("nombre", (String)company.getName());
 		
 		model.addAttribute("anio", (String)company.getData().get(0));
@@ -57,14 +63,20 @@ public class ClienteController {
 	public String crear(Map<String, Object> model) {
 		
 		Cliente cliente = new Cliente();
-		model.put("cliente",cliente);
+		model.put("clienteInit",cliente);
 		model.put("titulo","Formulario de Cliente");
 		
 		return "form";
 	}
 	
 	@PostMapping("/form")
-	public String guardar(Cliente cliente) {
+	public String guardar(@Valid  @ModelAttribute("clienteInit") Cliente cliente, BindingResult result, Model model) {
+		
+		if (result.hasErrors()) {
+			model.addAttribute("titulo","Formulario de Cliente");
+			return "form";
+		}
+		
 		clienteDao.save(cliente);
 		return "redirect:listar";
 	}
