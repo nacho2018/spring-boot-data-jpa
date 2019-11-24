@@ -10,7 +10,7 @@
 	<h1 th:text="${titulo}"></h1>
 
 		
-		<form th:action="@{/form}" th:object="${clienteInit}" method="post">
+		<form th:action="@{/form}" th:object="${cliente}" method="post">
 
 			<div class="form-group row">
 				<label class="col-sm-2 col-form-label">Nombre</label>
@@ -52,7 +52,7 @@
 				<input type="submit" value="Crear Cliente" class="btn btn-primary" />
 			</div>
 
-			<input type="hidden" th:field="*{id}" />
+
 		</form>
 	</div>
 

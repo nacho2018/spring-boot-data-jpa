@@ -81,6 +81,12 @@ public class Cliente implements  Serializable {
 		return serialVersionUID;
 	}
 	
+	@SuppressWarnings("deprecation")
+	public String toString() {
+		
+		return "Cliente[id]=" + id + ", [nombre]=" + nombre + ",[apellido]=" + apellido + 
+				",[mail]=" + email + "[fecha]=" + createAt.getDate();
+	}
 	
 	
 	
