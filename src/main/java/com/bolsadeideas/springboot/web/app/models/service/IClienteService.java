@@ -3,11 +3,16 @@ package com.bolsadeideas.springboot.web.app.models.service;
 import java.text.ParseException;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.bolsadeideas.springboot.web.app.models.entities.Cliente;
 
 public interface IClienteService {
 
 	public List<Cliente> findAll();
+	
+	public Page<Cliente> findAll(Pageable pageable);
 	
 	public void save(Cliente cliente);
 	

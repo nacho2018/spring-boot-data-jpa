@@ -1,20 +1,36 @@
 package com.bolsadeideas.springboot.web.app.controllers;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
@@ -24,20 +40,24 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.bolsadeideas.springboot.web.app.models.dao.IClienteDao;
 import com.bolsadeideas.springboot.web.app.models.entities.Cliente;
 import com.bolsadeideas.springboot.web.app.models.entities.Company;
 import com.bolsadeideas.springboot.web.app.models.service.IClienteService;
+import com.bolsadeideas.springboot.web.app.paginator.PageRender;
 
 
 @SessionAttributes("cliente")
 @Controller
 public class ClienteController {
 
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private IClienteService clienteService;
 	
@@ -45,12 +65,51 @@ public class ClienteController {
 	@Qualifier("company")
 	private Company company;
 	
+	@GetMapping(value="/uploads/{filename:.+}")
+	public ResponseEntity<Resource> verFoto(@PathVariable String filename){
+		Path pathFoto = Paths.get("uploads").resolve(filename).toAbsolutePath();
+		logger.info("pathFoto: " + pathFoto);
+		Resource recurso = null;
+		
+		try {
+			recurso = new UrlResource(pathFoto.toUri());
+			if (!recurso.exists() || !recurso.isReadable()) {
+				throw new RuntimeException("Error, no se puede cargar la imagen " + pathFoto.toString());
+			}
+		}catch(MalformedURLException ex) {
+			ex.printStackTrace();
+		}
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"");
+		
+		
+		return new ResponseEntity<Resource>(recurso, headers, HttpStatus.ACCEPTED);
+	}
+	
+	@GetMapping(value="/ver/{id}")
+	public String ver(@PathVariable(value="id") Long id, Map<String, Object> model, RedirectAttributes flash) {
+		
+		Cliente cliente = clienteService.findOne(id);
+		if (cliente == null) {
+			flash.addAttribute("error", "El cliente no existe en la base de datos.");
+			return "redirect:listar";
+		}
+		model.put("cliente", cliente);
+		model.put("titulo", "Detalle del cliente: " + cliente.getNombre());
+		
+		return "ver";
+		
+	}
+	
 	@RequestMapping(value="/listar", method=RequestMethod.GET)
-	public String listar(Model model) {
+	public String listar(@RequestParam(name="page", defaultValue="0") int page, Model model) {
+		Pageable pageRequest = PageRequest.of(page, 100);
+		Page<Cliente> clientes = this.clienteService.findAll(pageRequest);
 		
-		
+		PageRender<Cliente> pageRender = new PageRender<>("/listar", clientes);
 		model.addAttribute("titulo","Listado de Clientes");
-		model.addAttribute("clientes",clienteService.findAll());
+		model.addAttribute("clientes",clientes);
+		model.addAttribute("page", pageRender);
 		
 		return "listar";
 	}
@@ -83,37 +142,84 @@ public class ClienteController {
 	
 	@PostMapping("/form")
 	public String guardar(@Valid  @ModelAttribute("cliente") Cliente cliente, BindingResult result, 
-			Model model, SessionStatus status, HttpServletRequest request) {
+			Model model, @RequestParam("file") MultipartFile foto, RedirectAttributes flash, SessionStatus status, HttpServletRequest request) {
 		
 		if (result.hasErrors()) {
 			model.addAttribute("titulo","Formulario de Cliente");
 			return "form";
 		}
+		
+		String mensajeFlash = cliente.getId() != null ? "Cliente editado con éxito" : "Cliente creado con éxito";
 		HttpSession session = request.getSession();
 		Cliente clienteSession = (Cliente)session.getAttribute("cliente"); 
 		System.out.println("Datos del cliente en sesión: " +  clienteSession.toString());
 		
+		if (!foto.isEmpty()) {
+//			Path directorioRecursos = Paths.get("/opt/uploads");
+//			String rootPath= directorioRecursos.toFile().getAbsolutePath();
+//			
+//			try {
+//				byte[] bytes = foto.getBytes();
+//				StringTokenizer fotoStk = new StringTokenizer(foto.getOriginalFilename(), ".");
+//				String[] fotoTokens = new String[2];
+//				
+//				int i = 0;
+//				while(fotoStk.hasMoreTokens()) {
+//					fotoTokens[i] = fotoStk.nextToken();
+//					i++;
+//				}
+//				
+//				File tempFile = File.createTempFile(fotoTokens[0], "." + fotoTokens[1], new File(rootPath));
+//				
+//				if (tempFile != null && tempFile.isFile()) {
+//					if (tempFile.canWrite()) {
+//						Path rutaFichero = Paths.get(tempFile.getAbsolutePath());
+//						Files.write(rutaFichero, bytes);
+//					}else {
+//						System.out.println("No es posible escribir en el fichero.");
+//					}
+//				}
+//				
+//				flash.addFlashAttribute("info", "Has subido correctamente '" + foto.getOriginalFilename() + "'");
+//				cliente.setFoto(tempFile.getAbsolutePath());
+//			}catch(Exception e) {
+//				e.printStackTrace();
+//			}
+			String uniqueFileName = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
+			Path rootPath = Paths.get("uploads").resolve(uniqueFileName);
+			Path rootAbsolutePath = rootPath.toAbsolutePath();
+			logger.info("rootPath: " + rootPath);
+			logger.info("rootAbsolutePath: " + rootAbsolutePath);
+			try {
+				Files.copy(foto.getInputStream(), rootAbsolutePath);
+				flash.addFlashAttribute("info", "Has subido correctamente " + foto.getOriginalFilename());
+				cliente.setFoto(uniqueFileName);
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
+			
+			
+		}
 		clienteService.save(cliente);
-//		session.invalidate();
-//		try {
-//			Cliente clienteSession2 = (Cliente)session.getAttribute("cliente"); 
-//			System.out.println("Datos del cliente en sesión: " +  clienteSession2.toString());
-//		}catch(Exception ex) {
-//			System.out.println("Error de sesión: " + ex.getMessage());
-//		}
+		flash.addFlashAttribute("success", mensajeFlash);
 		session.removeAttribute("cliente");
 		
 		return "redirect:listar";
 	}
 
 	@RequestMapping(value="/form/{id}")
-	public String editar(@PathVariable(value="id") Long id, Map<String, Object> model) {
+	public String editar(@PathVariable(value="id") Long id, Map<String, Object> model, RedirectAttributes flash) {
 		
 		Cliente cliente = null;
 		
 		if (id > 0) {
 			cliente = clienteService.findOne(id);
+			if (cliente == null) {
+				flash.addFlashAttribute("error", "No existe cliente con ese id.");
+				return "redirect:/listar";
+			}
 		}else {
+			flash.addFlashAttribute("error", "El id del cliente no puede ser 0.");
 			return "redirect:/listar";
 		}
 		model.put("cliente" , cliente);
@@ -123,8 +229,9 @@ public class ClienteController {
 	}
 	
 	@RequestMapping(value="/eliminar/{id}")
-	public String eliminar(@PathVariable(value="id") Long id) {
+	public String eliminar(@PathVariable(value="id") Long id, RedirectAttributes flash) {
 		clienteService.delete(id);
+		flash.addFlashAttribute("success", "Cliente eliminado con éxito");
 		return "redirect:/listar";
 	}
 	
