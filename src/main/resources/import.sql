@@ -23,5 +23,23 @@ insert into clientes (id, nombre, apellido, email, create_at, foto) values (10, 
 --insert into clientes (id, nombre, apellido, email, create_at) values (24, 'Andres', 'Guzman', 'profesor@bolsadeideas.com', '2017-08-28');
 --insert into clientes (id, nombre, apellido, email, create_at) values (25, 'John', 'Doe', 'john.doe@gmail.com', '2017-08-28');
 
+/*Populate tabla de productos*/
+
+insert into productos (nombre, precio, create_at)  values ('Panasonic Pantalla LCD', 300.55, NOW());
+insert into productos (nombre, precio, create_at)  values ('Sony Camara Digital DSC-W3208', 90.45, NOW());
+insert into productos (nombre, precio, create_at)  values ('Apple iPod shuffle', 45.90, NOW());
+insert into productos (nombre, precio, create_at)  values ('Sony Notebook Z110', 200.70, NOW());
+insert into productos (nombre, precio, create_at)  values ('Hewlett Packard Multifunctional F2280', 120.99, NOW());
+insert into productos (nombre, precio, create_at)  values ('Mica Comoda 5 Cajones', 45.88, NOW());
+
+/*populate facturas*/
+insert into facturas(descripcion, observacion, cliente_id, create_at) values ('Factura Equipos Digitales', null, 1,  NOW());
+insert into facturas_item (cantidad, factura_id, producto_id) values (1, 1, 1);
+insert into facturas_item (cantidad, factura_id, producto_id) values (2, 1, 2);
+insert into facturas_item (cantidad, factura_id, producto_id) values (1, 1, 3);
+insert into facturas_item (cantidad, factura_id, producto_id) values (1, 1, 4);
+
+insert into facturas(descripcion, observacion, cliente_id, create_at) values ('Factura Cajones', 'Alguna nota importante!', 1, NOW());
+insert into facturas_item (cantidad, factura_id, producto_id) values (3, 2, 6);
 
 
