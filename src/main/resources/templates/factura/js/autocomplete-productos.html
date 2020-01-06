@@ -39,7 +39,8 @@
 					
 					 	$('#cargarItemProductos tbody').append(linea); //añade la línea al cuerpo de la table tras selección
 					 	itemsHelper.calcularImporte(ui.item.value, ui.item.precio, 1);
-					 }else{
+					 	
+					  }else{
 						 //se elimina el prefijo "row_" del identificador
 						 var id_sin_prefijo = idLocalizacion.split("_")[1];
 						 console.log("id sin prefijo " + id_sin_prefijo);
@@ -48,6 +49,9 @@
 						 $("#cantidad_" + id_sin_prefijo).val(cantidad_actual);
 						
 			    	}
+					 
+			    	//actualiza el total de la factura: iterar sobre todas las filas y acumular los totales parciales
+				 	$('#totalFacturaCell').html("<span>" + itemsHelper.calcularTotalFactura() + "</span>");
 			    	return false;
 				 	
 			 }
@@ -56,7 +60,10 @@
 	 
 		 var itemsHelper = {
 				 calcularImporte : function(id, precio, cantidad){
-					 $('#total_importe_' + id).html(parseInt(precio) * parseInt(cantidad));
+					 var total = parseFloat(precio) * parseInt(cantidad);
+					 $('#total_importe_' + id).html(total.toFixed(2));
+					//actualiza el total de la factura: iterar sobre todas las filas y acumular los totales parciales
+					 	$('#totalFacturaCell').html("<span>" + itemsHelper.calcularTotalFactura() + "</span>");
 				 },
 				 hasProducto : function(id){
 					 console.log("id entrada " + id);
@@ -80,9 +87,30 @@
 					 }else{
 						 console.log("primera entrada");
 						 return -1;
-					 }
+					 } 
+					 
+				 },
+				 eliminarLineaFactura: function(id){
+					 console.log("se elimina la línea de factura de id " + id);
+					 $("#row_" + id).remove();
+					//actualiza el total de la factura: iterar sobre todas las filas y acumular los totales parciales
+					 	$('#totalFacturaCell').html("<span>" + itemsHelper.calcularTotalFactura() + "</span>");
+				 },
+				 calcularTotalFactura : function(){
+					 var lineasProducto = $("#cargarItemProductos tbody").find("tr");
+					 var totalFactura = 0;
+					 $.each(lineasProducto, function(index,value){ 
+						 var id = value.id;
+						 id = id.split("_");
+						 id = id[1];
+						 console.log("valor del importe parcial de la fila " + id + " " + $('#total_importe_' + id).text());
+						 totalFactura += parseFloat($('#total_importe_' + id).text());
+					 });
+					 console.log("el total de la factura " + totalFactura);
+					 return totalFactura;
 					 
 				 }
+				 
 		 }
 		
 		 
