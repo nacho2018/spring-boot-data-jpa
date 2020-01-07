@@ -14,7 +14,7 @@
 						<h4 class="card-title">
 								<a class="btn btn-light btn-xs" th:href="@{'/ver/' + ${factura.cliente.id}}" th:text="'volver'"></a>
 						</h4>
-				<form action="@{/factura/form}" method="post" th:object="${factura}">
+				<form action="/factura/form" method="post" th:object="${factura}">
 
 					<div class="form-group row"> <!-- cliente -->
 						<label for="cliente" class="col-sm-2 col-form-label">Cliente</label>
@@ -64,7 +64,7 @@
 							</tr>
 						</table>
 					<div class="form-group row">
-						<input type="submit" value="Crear Factura"  class="btn btn-primary" />
+						<input type="submit" value="Crear Factura"  class="btn btn-primary"  onclick="itemsHelper.eliminarPlantilla();"/>
 					</div>
 
 				</form>

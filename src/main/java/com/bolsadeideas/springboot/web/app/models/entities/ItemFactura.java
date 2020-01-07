@@ -45,6 +45,12 @@ public class ItemFactura implements Serializable{
 		
 	}
 	
+	public Producto getProducto() {
+		return this.producto;
+	}
 	
+	public void setProducto(Producto producto) {
+		this.producto = producto;
+	}
 	
 }
