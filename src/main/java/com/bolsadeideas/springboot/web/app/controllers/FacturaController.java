@@ -1,12 +1,17 @@
 package com.bolsadeideas.springboot.web.app.controllers;
 
 import java.util.List;
+
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,12 +63,26 @@ public class FacturaController {
 	}
 	
 	@PostMapping(value="/form")
-	public String guardar(Factura factura,
+	public String guardar(@Valid Factura factura,BindingResult result,
 		@RequestParam(name="item_id[]", required=false) Long[] itemId,
 		@RequestParam(name="cantidad[]", required=false) Integer[] cantidad,
 		RedirectAttributes flash,
-		SessionStatus status) {
+		SessionStatus status, Model model) {
 			
+	
+		if (result.hasErrors()) {
+			//no pasa las restricciones de entidad, vuelta al formulario
+			
+			model.addAttribute("titulo", "Crear factura");
+			return "factura/form";
+			
+		}
+		
+		if (itemId == null || itemId.length == 0) {
+			model.addAttribute("titulo", "Crear factura");
+			model.addAttribute("error", "La factura No puede no tener líneas");
+			return "factura/form";
+		}
 			for(int i = 0; i < itemId.length; i++) {
 				log.info("itemId " + itemId[i].toString());
 				log.info("cantidad " + cantidad[i].toString());
@@ -82,5 +101,43 @@ public class FacturaController {
 			return "redirect:/ver/" + factura.getCliente().getId();
 		
 	}
+	
+	@GetMapping(value="/ver/{id}")
+	public String getLineasFactura(@PathVariable(value="id") Long id,
+			Model model, RedirectAttributes flash){
+		
+
+		Factura factura = clienteService.findFacturaById(id);
+		
+		if (factura == null) {
+			flash.addFlashAttribute("error",  "La factura no existe");
+			return "redirect:/listar";
+		}
+		if(factura.getItems() == null || factura.getItems().isEmpty()) {
+			flash.addFlashAttribute("error",  "La factura está vacía");
+			return "redirect:/listar";
+		}
+		model.addAttribute("titulo", "Detalle de la factura");
+		model.addAttribute("factura", factura);
+		
+		return "factura/ver";
+	}
+	
+	@GetMapping(value="/eliminar/{id}/")
+	public String eliminarFactura(@PathVariable(value="id") Long id,
+			Model model, RedirectAttributes flash) {
+		
+		Factura factura = clienteService.findFacturaById(id);
+		
+			if (factura == null) {
+				flash.addFlashAttribute("error", "La factura no existe!");
+				
+			}else {
+				clienteService.eliminarFacturaById(id);
+				flash.addFlashAttribute("success", "Factura eliminada!");
+			}
+		
+		return "redirect:/ver/" + factura.getCliente().getId();
+		}
 	
 }

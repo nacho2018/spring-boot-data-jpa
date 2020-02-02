@@ -39,6 +39,7 @@
 						<th>fecha</th>
 						<th>observaci&oacute;n</th>
 						<th>total</th>
+						<th>ver</th>
 					
 					</thead>
 					<tbody>
@@ -48,6 +49,8 @@
 							<td th:text="${factura.createAt}"/>
 							<td th:text="${factura.observacion}"/>
 							<td th:text="${factura.calcularTotal()}"/>
+							<td ><a th:href="@{'/factura/ver/' + ${factura.id}}" class="btn btn-primary">detalle</a></td>
+							<td><a th:href="@{'/factura/eliminar/' +   ${factura.id}}" class="btn btn-primary">X</a></td>
 						</tr>
 					</tbody>
 				</table>

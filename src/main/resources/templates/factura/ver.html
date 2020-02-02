@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xlmns:th="http://www.thymeleaf.org">
+<head th:replace="layout/layout :: head"></head>
+
+<body>
+		<header th:replace="layout/layout :: header"></header>
+		<div class="container py-4">
+			<div class="card bg-light">
+					<div class="card-header" th:text="${titulo}"></div>
+					<div class="card-body">
+						<h4 class="card-title">
+								<a class="btn btn-light btn-xs" th:href="@{'/ver/' + ${factura.cliente.id}}" th:text="'volver'"></a>
+						</h4>
+				<form  method="post" th:object="${factura}">
+
+					<div class="alert alert-info my-4" 
+				    th:if="${#lists.isEmpty(factura.items)}" 
+				    th:text="'No hay líneas para la factura de id '  + ${factura.id} ">
+					
+				</div>
+				<div class="alert alert-info my-4" th:if="${#lists.isEmpty(factura.items)}"
+				th:text="'No hay líneas para la factura' + ${factura.descripcion}"></div>
+				
+				<table th:if="${not #lists.isEmpty(factura.items)}" class="table table-striped table-bordered">
+				<thead>
+					
+					   <th>ID de factura</th>
+						<th>Producto</th>
+						<th>Precio</th>
+						<th>Cantidad</th>
+						<th>Total</th>
+						<th>Fecha</th>
+						
+						
+					</thead>
+					<tbody>
+						<tr th:each="item : ${factura.items}">
+							<td th:text="${factura.id}"/>
+							<td th:text="${item.getProducto().getNombre()}"/>
+							<td th:text="${item.getProducto().getPrecio()}"/>
+							<td th:text="${item.cantidad}"/>
+							<td th:text="${item.calcularImporte()}"/>
+							<td th:text="${#dates.format(factura.createAt, 'dd-MM-yyyy')}"/>
+						</tr>
+					</tbody>
+				</table>
+				
+				<h5 class="float-right">Gran Total <span th:text="${factura.calcularTotal()}" class="badge badge-secondary"></span></h5>
+						
+				<div class="panel panel-default border-info">
+					  <div class="panel-heading"><h3 class="panel-title" th:text="Observaciones"></h3></div>
+					  <div class="panel-body" th:if="${#strings.isEmpty(factura.observacion)}" th:text="'No hay observaciones'"></div>
+					  <div class="panel-body" th:if="${not #strings.isEmpty(factura.observacion)}" th:text="${factura.observacion}"></div>
+				</div>
+				
+				</form>
+			</div>
+				</div>
+		</div>
+		
+			<footer th:replace="layout/layout :: footer"></footer>	
+</body>
+</html>
