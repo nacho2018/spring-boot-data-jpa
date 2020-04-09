@@ -10,6 +10,8 @@
 					<div class="card-body">
 						<h4 class="card-title">
 								<a class="btn btn-light btn-xs" th:href="@{'/ver/' + ${factura.cliente.id}}" th:text="'volver'"></a>
+								<a class="btn btn-danger btn-xs float-right"  th:href="@{'/factura/ver/' + ${factura.cliente.id}(format=pdf)}" th:text="'PDF'"></a>
+								<a class="btn btn-success btn-xs float-right"  th:href="@{'/factura/ver/' + ${factura.cliente.id}(format=xlsx)}" th:text="'XLSX'"></a>
 						</h4>
 				<form  method="post" th:object="${factura}">
 

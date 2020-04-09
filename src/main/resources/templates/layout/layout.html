@@ -50,6 +50,21 @@
 						</div>
 					</li>
 				</ul>
+				<ul class="navbar-nav navbar-right mx-4">
+					<li class="nav-item mx-1"><a class="btn btn-outline-success"  th:href="@{/locale?lang=es}">ES</a></li>
+					<li class="nav-item mx-1"><a class="btn btn-outline-success"  th:href="@{/locale?lang=en}">EN</a></li>
+					<li class="nav-item mx-4"> 
+							<div class="dropdown">
+								  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+								 		 th:text="#{text.nav.lenguaje.combo }">
+								    </button>
+								  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+								    <a class="dropdown-item text-success" th:href="@{/locale?lang=es}"  th:text="#{text.nav.lenguaje.es }"></a>
+								    <a class="dropdown-item text-success" th:href="@{/locale?lang=en}"   th:text="#{text.nav.lenguaje.en}"></a>
+							 </div>
+            			</div>
+					</li>
+				</ul>
 			</div>
 		</nav>
 		<!-- mensajes de operaciones , se muestran si viene en parámetro informado desde el modelo-->

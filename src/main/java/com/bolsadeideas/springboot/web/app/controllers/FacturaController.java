@@ -1,14 +1,19 @@
 package com.bolsadeideas.springboot.web.app.controllers;
 
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -25,7 +30,11 @@ import com.bolsadeideas.springboot.web.app.models.entities.Factura;
 import com.bolsadeideas.springboot.web.app.models.entities.ItemFactura;
 import com.bolsadeideas.springboot.web.app.models.entities.Producto;
 import com.bolsadeideas.springboot.web.app.models.service.IClienteService;
+import com.bolsadeideas.springboot.web.app.view.pdf.FacturaPdfView;
+import com.lowagie.text.Document;
+import com.lowagie.text.pdf.PdfWriter;
 
+@Secured({"ROLE_ADMIN"})
 @Controller
 @RequestMapping(value="/factura")
 @SessionAttributes("factura")
@@ -35,6 +44,9 @@ public class FacturaController {
 	
 	@Autowired
 	private IClienteService clienteService;
+	
+	@Autowired
+	private FacturaPdfView facturaPdfView;
 	
 	@GetMapping("/form/{clienteId}")
 	public String crear(@PathVariable Long clienteId, Model model, RedirectAttributes flash) {
@@ -104,7 +116,8 @@ public class FacturaController {
 	
 	@GetMapping(value="/ver/{id}")
 	public String getLineasFactura(@PathVariable(value="id") Long id,
-			Model model, RedirectAttributes flash){
+			Model model, RedirectAttributes flash, HttpServletRequest request,
+			HttpServletResponse response){
 		
 
 		Factura factura = clienteService.findFacturaById(id);
@@ -120,7 +133,9 @@ public class FacturaController {
 		model.addAttribute("titulo", "Detalle de la factura");
 		model.addAttribute("factura", factura);
 		
+	
 		return "factura/ver";
+		
 	}
 	
 	@GetMapping(value="/eliminar/{id}/")

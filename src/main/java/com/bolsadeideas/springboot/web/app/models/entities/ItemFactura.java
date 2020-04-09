@@ -1,6 +1,7 @@
 package com.bolsadeideas.springboot.web.app.models.entities;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,11 +12,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 @Entity
 @Table(name="facturas_item")
 public class ItemFactura implements Serializable{
 
 	private static final long serialVersionUID = 1L;
+	
+
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +28,7 @@ public class ItemFactura implements Serializable{
 	
 	private Integer cantidad; //cantidad * precio / unidad
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="producto_id")
 	private Producto producto;
 	
@@ -52,5 +57,7 @@ public class ItemFactura implements Serializable{
 	public void setProducto(Producto producto) {
 		this.producto = producto;
 	}
+	
+	
 	
 }

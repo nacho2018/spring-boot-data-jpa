@@ -1,6 +1,7 @@
 package com.bolsadeideas.springboot.web.app.models.entities;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -12,6 +13,10 @@ import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Entity
 @Table(name="productos")
@@ -22,6 +27,9 @@ public class Producto implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	@Transient
+	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
@@ -62,6 +70,10 @@ public class Producto implements Serializable{
 		this.createAt = createAt;
 	}
 	
-	
+	public String toString() {
+		
+		return "[id " + this.id + " producto " + this.nombre + " precio " + this.precio + " fecha "  +
+				simpleDateFormat.format(this.createAt) + "]";
+	}
 
 }
